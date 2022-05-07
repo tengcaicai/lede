@@ -1,0 +1,20 @@
+--- a/drivers/mtd/nand/mtk_nand2.c
++++ b/drivers/mtd/nand/mtk_nand2.c
+@@ -2289,7 +2289,7 @@
+ 
+ out:
+ 	MSG(INIT, "[NFI] mtk_nand_probe fail, err = %d!\n", err);
+-	nand_release(mtd);
++	nand_release_device(mtd);
+ 	platform_set_drvdata(pdev, NULL);
+ 	kfree(host);
+ 	nand_disable_clock();
+@@ -2303,7 +2303,7 @@
+ 	struct mtd_info *mtd = host->mtd;
+ 	struct nand_chip *nand_chip = &host->nand_chip;
+ 
+-	nand_release(mtd);
++	nand_release_device(mtd);
+ 	kfree(host);
+ 	nand_disable_clock();
+ 
