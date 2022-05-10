@@ -1,0 +1,9 @@
+--- a/utils.h
++++ b/utils.h
+@@ -265,6 +265,5 @@
+ 
+ void *cbuf_alloc(unsigned int order);
+ void cbuf_free(void *ptr, unsigned int order);
+-int mkdir_p(char *dir, mode_t mask);
+ 
+ #endif

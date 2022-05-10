@@ -1,0 +1,81 @@
+--- a/net/netfilter/nf_flow_table_hw.c
++++ b/net/netfilter/nf_flow_table_hw.c
+@@ -24,39 +24,45 @@
+ 	struct flow_offload_hw_path dest;
+ };
+ 
+-static void flow_offload_check_ethernet(struct flow_offload_tuple *tuple,
+-					struct dst_entry *dst,
++static void flow_offload_check_ethernet(struct flow_offload *flow,
++					enum flow_offload_tuple_dir dir,
+ 					struct flow_offload_hw_path *path)
+ {
+ 	struct net_device *dev = path->dev;
+ 	struct neighbour *n;
++	const void *daddr;
++	const struct dst_entry *dst_cache;
+ 
+ 	if (dev->type != ARPHRD_ETHER)
+ 		return;
+ 
+ 	memcpy(path->eth_src, path->dev->dev_addr, ETH_ALEN);
+-	n = dst_neigh_lookup(dst, &tuple->src_v4);
++	daddr = &flow->tuplehash[dir].tuple.src_v4;
++	dst_cache = flow->tuplehash[!dir].tuple.dst_cache;
++	n = dst_neigh_lookup(dst_cache, daddr);
+ 	if (!n)
+ 		return;
+ 
+-	memcpy(path->eth_dest, n->ha, ETH_ALEN);
+-	path->flags |= FLOW_OFFLOAD_PATH_ETHERNET;
++	if (n->nud_state & NUD_VALID) {
++		memcpy(path->eth_dest, n->ha, ETH_ALEN);
++		path->flags |= FLOW_OFFLOAD_PATH_ETHERNET;
++	}
+ 	neigh_release(n);
+ }
+ 
+ static int flow_offload_check_path(struct net *net,
+-				   struct flow_offload_tuple *tuple,
+-				   struct dst_entry *dst,
++				   struct flow_offload *flow,
++				   enum flow_offload_tuple_dir dir,
+ 				   struct flow_offload_hw_path *path)
+ {
+ 	struct net_device *dev;
+ 
+-	dev = dev_get_by_index_rcu(net, tuple->iifidx);
++	dev = dev_get_by_index_rcu(net, flow->tuplehash[dir].tuple.iifidx);
+ 	if (!dev)
+ 		return -ENOENT;
+ 
+ 	path->dev = dev;
+-	flow_offload_check_ethernet(tuple, dst, path);
++	flow_offload_check_ethernet(flow, dir, path);
+ 
+ 	if (dev->netdev_ops->ndo_flow_offload_check)
+ 		return dev->netdev_ops->ndo_flow_offload_check(path);
+@@ -135,18 +141,18 @@
+ {
+ 	struct flow_offload_hw_path src = {};
+ 	struct flow_offload_hw_path dest = {};
+-	struct flow_offload_tuple *tuple_s, *tuple_d;
++//	struct flow_offload_tuple *tuple_s, *tuple_d;
+ 	struct flow_offload_hw *offload = NULL;
+ 
+ 	rcu_read_lock_bh();
+ 
+-	tuple_s = &flow->tuplehash[FLOW_OFFLOAD_DIR_ORIGINAL].tuple;
+-	tuple_d = &flow->tuplehash[FLOW_OFFLOAD_DIR_REPLY].tuple;
++//	tuple_s = &flow->tuplehash[FLOW_OFFLOAD_DIR_ORIGINAL].tuple;
++//	tuple_d = &flow->tuplehash[FLOW_OFFLOAD_DIR_REPLY].tuple;
+ 
+-	if (flow_offload_check_path(net, tuple_s, tuple_d->dst_cache, &src))
++	if (flow_offload_check_path(net, flow, FLOW_OFFLOAD_DIR_ORIGINAL, &src))
+ 		goto out;
+ 
+-	if (flow_offload_check_path(net, tuple_d, tuple_s->dst_cache, &dest))
++	if (flow_offload_check_path(net, flow, FLOW_OFFLOAD_DIR_REPLY, &dest))
+ 		goto out;
+ 
+ 	if (!src.dev->netdev_ops->ndo_flow_offload)
