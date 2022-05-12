@@ -286,6 +286,7 @@ config KERNEL_SLABINFO
 	select KERNEL_SLUB_DEBUG
 	select KERNEL_SLUB_DEBUG_ON
 	bool "Enable /proc slab debug info"
+	default y
 
 config KERNEL_PROC_PAGE_MONITOR
 	bool "Enable /proc page monitoring"
