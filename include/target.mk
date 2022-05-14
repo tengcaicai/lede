@@ -20,7 +20,7 @@ luci-app-filetransfer luci-app-vsftpd luci-app-ssr-plus luci-app-unblockmusic \
 luci-app-arpbind luci-app-vlmcsd luci-app-wol luci-app-ramfree \
 luci-app-flowoffload luci-app-nlbwmon luci-app-accesscontrol luci-app-cpufreq \
 ddns-scripts_aliyun ddns-scripts_dnspod \
-kmod-nls-base kmod-nls-cp437 kmod-nls-cp936 kmod-nls-iso8859-1 kmod-nls-utf8
+kmod-nls-base kmod-nls-cp437 kmod-nls-cp936 kmod-nls-iso8859-1 kmod-nls-utf8 htop
 # For nas targets
 DEFAULT_PACKAGES.nas:=block-mount fdisk lsblk mdadm
 # For router targets
